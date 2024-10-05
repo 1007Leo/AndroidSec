@@ -30,10 +30,10 @@ interface AccountService {
 
   suspend fun authenticate(email: String, password: String)
   suspend fun sendRecoveryEmail(email: String)
-  suspend fun createAnonymousAccount()
   suspend fun linkAccount(email: String, password: String)
   suspend fun createUserFromCredentials(credential: AuthCredential)
   suspend fun createUserFromMail(email: String)
+  suspend fun createUserFromId(id: String)
   suspend fun deleteAccount()
   suspend fun signOut()
   suspend fun getCurrentUserData(): User

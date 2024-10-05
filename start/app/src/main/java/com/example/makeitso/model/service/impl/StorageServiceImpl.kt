@@ -26,7 +26,6 @@ import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.tasks.await
 
@@ -39,7 +38,7 @@ constructor(private val firestore: FirebaseFirestore, private val auth: AccountS
   override val tasks: Flow<List<Task>>
     get() =
       auth.currentUser.flatMapLatest { user ->
-        firestore.collection(TASK_COLLECTION).whereEqualTo(USER_ID_FIELD, user.id).dataObjects()
+        firestore.collection(TASK_COLLECTION).whereEqualTo(USER_ID_FIELD, user.userId).dataObjects()
       }
 
 

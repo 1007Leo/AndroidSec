@@ -17,7 +17,7 @@ limitations under the License.
 package com.example.makeitso.model
 
 data class User(
-    val id: String = "",
+    val userId: String = "",
     val isAnonymous: Boolean = true,
     var name: String = "",
     var birthdate: String = "",

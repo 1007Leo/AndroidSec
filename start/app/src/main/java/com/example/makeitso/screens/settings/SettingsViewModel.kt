@@ -21,7 +21,6 @@ import com.example.makeitso.SIGN_UP_SCREEN
 import com.example.makeitso.SPLASH_SCREEN
 import com.example.makeitso.model.service.AccountService
 import com.example.makeitso.model.service.LogService
-import com.example.makeitso.model.service.StorageService
 import com.example.makeitso.screens.MakeItSoViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -31,7 +30,6 @@ import kotlinx.coroutines.flow.map
 class SettingsViewModel @Inject constructor(
   logService: LogService,
   private val accountService: AccountService,
-  private val storageService: StorageService
 ) : MakeItSoViewModel(logService) {
   val uiState = accountService.currentUser.map {
     SettingsUiState(it.isAnonymous)

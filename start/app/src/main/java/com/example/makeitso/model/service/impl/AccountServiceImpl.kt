@@ -32,14 +32,14 @@ import kotlinx.coroutines.tasks.await
 class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, private val firestore: FirebaseFirestore
 ) : AccountService {
 
-  override val currentUserData: User
-    get() {
-      val user = User()
-      return user
-    }
-
   override val currentUserId: String
     get() = auth.currentUser?.uid.orEmpty()
+
+  override val currentUserData: User
+    get() {
+      val user = User(userId = currentUserId)
+      return user
+    }
 
   override val hasUser: Boolean
     get() = auth.currentUser != null && !auth.currentUser!!.isAnonymous
@@ -56,7 +56,7 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
 
   override suspend fun authenticate(email: String, password: String) {
     auth.signInWithEmailAndPassword(email, password).await()
-    val newUser = User(id = currentUserId, authMethod = MAIL_LOGIN_TYPE)
+    val newUser = User(userId = currentUserId, authMethod = MAIL_LOGIN_TYPE, isAnonymous = false)
     newUser.login = email
     saveCurrentUserData(newUser)
   }
@@ -65,30 +65,35 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
     auth.sendPasswordResetEmail(email).await()
   }
 
-  override suspend fun createAnonymousAccount() {
-    //auth.signInAnonymously().await()
-  }
-
   override suspend fun linkAccount(email: String, password: String) {
     val credential = EmailAuthProvider.getCredential(email, password)
+    auth.signInAnonymously().await()
     auth.currentUser!!.linkWithCredential(credential).await()
     createUserFromMail(email)
   }
 
   override suspend fun createUserFromCredentials(credential: AuthCredential) {
-    val newUser = User(id = currentUserId, authMethod = GOOGLE_LOGIN_TYPE)
+    val newUser = User(userId = currentUserId, authMethod = GOOGLE_LOGIN_TYPE, isAnonymous = false)
+
     saveCurrentUserData(newUser)
   }
 
   override suspend fun createUserFromMail(email: String) {
-    val newUser = User(id = currentUserId, authMethod = GOOGLE_LOGIN_TYPE)
+    val newUser = User(userId = currentUserId, authMethod = MAIL_LOGIN_TYPE, isAnonymous = false)
     newUser.login = email
     saveCurrentUserData(newUser)
   }
 
+  override suspend fun createUserFromId(id: String) {
+
+    val document = firestore.collection(USER_COLLECTION).whereEqualTo("userId", id).get().await()
+    val user = document.first().toObject(User::class.java)
+    saveCurrentUserData(user)
+  }
+
   override suspend fun deleteAccount() {
+    deleteCurrentUserData(currentUserData.userId)
     auth.currentUser!!.delete().await()
-    deleteCurrentUserData(currentUserId)
   }
 
   override suspend fun signOut() {
@@ -96,9 +101,6 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
       auth.currentUser!!.delete()
     }
     auth.signOut()
-
-    // Sign the user back in anonymously.
-    createAnonymousAccount()
   }
 
   override suspend fun getCurrentUserData(): User {
@@ -107,15 +109,18 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
 
   override suspend fun saveCurrentUserData(user: User) {
     trace(SAVE_USER_DATA_TRACE) {
-      val userWithUserId = user.copy(id = currentUserId)
-      firestore.collection(USER_COLLECTION).add(userWithUserId).await().id
+      val userWithUserId = user.copy(userId = currentUserId)
+      val cnt = firestore.collection(USER_COLLECTION).whereEqualTo("userId", currentUserId).get().await()
+      if (cnt.size() == 0){
+        firestore.collection(USER_COLLECTION).add(userWithUserId).await().id
+      }
     }
   }
 
   override suspend fun deleteCurrentUserData(id: String) {
-    firestore.collection(USER_COLLECTION).document(id).delete().await()
+    val documentId = firestore.collection(USER_COLLECTION).whereEqualTo("userId", id).get().await().first().id
+    firestore.collection(USER_COLLECTION).document(documentId).delete().await()
   }
-
 
   companion object {
     private const val USER_COLLECTION = "users"

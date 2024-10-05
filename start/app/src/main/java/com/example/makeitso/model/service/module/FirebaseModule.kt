@@ -16,6 +16,7 @@ limitations under the License.
 
 package com.example.makeitso.model.service.module
 
+import com.example.makeitso.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,4 +33,5 @@ object FirebaseModule {
   @Provides fun auth(): FirebaseAuth = Firebase.auth
 
   @Provides fun firestore(): FirebaseFirestore = Firebase.firestore
+
 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.makeitso.R.drawable as AppIcon
 import com.example.makeitso.R.string as AppText
 import com.example.makeitso.common.composable.ActionToolbar
@@ -42,8 +43,14 @@ fun TasksScreen(
   openScreen: (String) -> Unit,
   viewModel: TasksViewModel = hiltViewModel()
 ) {
+  val tasks = viewModel.tasks.collectAsStateWithLifecycle(emptyList())
+  val options by viewModel.options
+
   TasksScreenContent(
+    tasks = tasks.value,
+    options = options,
     onAddClick = viewModel::onAddClick,
+    onProfileClick = viewModel::onProfileClick,
     onSettingsClick = viewModel::onSettingsClick,
     onTaskCheckChange = viewModel::onTaskCheckChange,
     onTaskActionClick = viewModel::onTaskActionClick,
@@ -57,8 +64,11 @@ fun TasksScreen(
 @Composable
 @ExperimentalMaterialApi
 fun TasksScreenContent(
+  tasks: List<Task>,
+  options: List<String>,
   modifier: Modifier = Modifier,
   onAddClick: ((String) -> Unit) -> Unit,
+  onProfileClick: ((String) -> Unit) -> Unit,
   onSettingsClick: ((String) -> Unit) -> Unit,
   onTaskCheckChange: (Task) -> Unit,
   onTaskActionClick: ((String) -> Unit, Task, String) -> Unit,
@@ -80,6 +90,8 @@ fun TasksScreenContent(
       ActionToolbar(
         title = AppText.tasks,
         modifier = Modifier.toolbarActions(),
+        secondActionIcon = AppIcon.ic_sign_in,
+        secondAction = { onProfileClick(openScreen) },
         endActionIcon = AppIcon.ic_settings,
         endAction = { onSettingsClick(openScreen) }
       )
@@ -87,10 +99,10 @@ fun TasksScreenContent(
       Spacer(modifier = Modifier.smallSpacer())
 
       LazyColumn {
-        items(emptyList<Task>(), key = { it.id }) { taskItem ->
+        items(tasks, key = { it.id }) { taskItem ->
           TaskItem(
             task = taskItem,
-            options = listOf(),
+            options = options,
             onCheckChange = { onTaskCheckChange(taskItem) },
             onActionClick = { action -> onTaskActionClick(openScreen, taskItem, action) }
           )
@@ -104,9 +116,20 @@ fun TasksScreenContent(
 @ExperimentalMaterialApi
 @Composable
 fun TasksScreenPreview() {
+  val task = Task(
+    title = "Task title",
+    flag = true,
+    completed = true
+  )
+
+  val options = TaskActionOption.getOptions(hasEditOption = true)
+
   MakeItSoTheme {
     TasksScreenContent(
+      tasks = listOf(task),
+      options = options,
       onAddClick = { },
+      onProfileClick = {},
       onSettingsClick = { },
       onTaskCheckChange = { },
       onTaskActionClick = { _, _, _ -> },

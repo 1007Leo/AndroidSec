@@ -16,6 +16,7 @@
     <string name="forgot_password">Forgot password? Click to get recovery email</string>
     <string name="recovery_email_sent">Check your inbox for the recovery email.</string>
     <string name="empty_password_error">Password cannot be empty.</string>
+    <string name="sign_up">Create account</string>
 
     <!-- SignUpScreen -->
     <string name="create_account">Create account</string>

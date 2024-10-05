@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.makeitso.R.string as AppText
 import com.example.makeitso.SETTINGS_SCREEN
 import com.example.makeitso.SIGN_UP_SCREEN
+import com.example.makeitso.TASKS_SCREEN
 import com.example.makeitso.common.ext.isValidEmail
 import com.example.makeitso.common.ext.isValidPassword
 import com.example.makeitso.common.ext.passwordMatches
@@ -72,7 +73,8 @@ class SignUpViewModel @Inject constructor(
     }
 
     launchCatching {
-      //TODO
+      accountService.linkAccount(email, password)
+      openAndPopUp(TASKS_SCREEN, SIGN_UP_SCREEN)
     }
   }
 }

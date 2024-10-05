@@ -17,6 +17,8 @@ limitations under the License.
 package com.example.makeitso
 
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
@@ -29,6 +31,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class MakeItSoActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    StrictMode.setVmPolicy(
+      VmPolicy.Builder(StrictMode.getVmPolicy()).detectLeakedClosableObjects().build()
+    )
 
     setContent { MakeItSoApp() }
   }

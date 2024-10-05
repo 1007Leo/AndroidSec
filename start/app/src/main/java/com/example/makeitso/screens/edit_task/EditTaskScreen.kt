@@ -86,6 +86,8 @@ fun EditTaskScreenContent(
     ActionToolbar(
       title = AppText.edit_task,
       modifier = Modifier.toolbarActions(),
+      secondActionIcon = null,
+      secondAction = {},
       endActionIcon = AppIcon.ic_check,
       endAction = { onDoneClick() }
     )

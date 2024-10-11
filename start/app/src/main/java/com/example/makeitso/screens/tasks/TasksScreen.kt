@@ -129,7 +129,7 @@ fun TasksScreenPreview() {
       tasks = listOf(task),
       options = options,
       onAddClick = { },
-      onProfileClick = {},
+      onProfileClick = { },
       onSettingsClick = { },
       onTaskCheckChange = { },
       onTaskActionClick = { _, _, _ -> },

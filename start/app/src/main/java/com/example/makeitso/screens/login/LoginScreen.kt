@@ -56,7 +56,7 @@ fun LoginScreen(
   val context = LocalContext.current as Activity
 
   LoginScreenContent(
-    onGoogleSignInClick = { viewModel.handleGoogleSignIn(context, openAndPopUp) },
+    onGoogleSignInClick = { viewModel.onGoogleSignInClick(context, openAndPopUp) },
     isDarkTheme = isDarkTheme,
     uiState = uiState,
     onEmailChange = viewModel::onEmailChange,
@@ -97,7 +97,6 @@ fun LoginScreenContent(
 
     Box(
       contentAlignment = Alignment.Center,
-      //modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerHigh)
     ) {
       Surface(
         shape = CircleShape,

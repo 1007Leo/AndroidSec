@@ -39,6 +39,7 @@ import androidx.navigation.navArgument
 import com.example.makeitso.common.composable.PermissionDialog
 import com.example.makeitso.common.composable.RationaleDialog
 import com.example.makeitso.common.snackbar.SnackbarManager
+import com.example.makeitso.screens.edit_profile.EditProfileScreen
 import com.example.makeitso.screens.edit_task.EditTaskScreen
 import com.example.makeitso.screens.login.LoginScreen
 import com.example.makeitso.screens.settings.SettingsScreen
@@ -139,9 +140,6 @@ fun NavGraphBuilder.makeItSoGraph(appState: MakeItSoAppState) {
     SignUpScreen(openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) })
   }
 
-  composable(EDIT_PROFILE_SCREEN) {
-
-  }
 
   composable(TASKS_SCREEN) { TasksScreen(openScreen = { route -> appState.navigate(route) }) }
 
@@ -153,6 +151,14 @@ fun NavGraphBuilder.makeItSoGraph(appState: MakeItSoAppState) {
     })
   ) {
     EditTaskScreen(
+      popUpScreen = { appState.popUp() }
+    )
+  }
+
+  composable(
+    route = EDIT_PROFILE_SCREEN,
+  ) {
+    EditProfileScreen(
       popUpScreen = { appState.popUp() }
     )
   }

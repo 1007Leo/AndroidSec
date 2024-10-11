@@ -49,6 +49,19 @@ fun BasicField(
 }
 
 @Composable
+fun BasicFieldImmutable(
+  @StringRes text: Int,
+  value: String,
+  modifier: Modifier = Modifier
+) {
+  val curText = if (value != "") value else text.toString()
+  Text(
+    modifier = modifier,
+    text = curText
+  )
+}
+
+@Composable
 fun EmailField(value: String, onNewValue: (String) -> Unit, modifier: Modifier = Modifier) {
   OutlinedTextField(
     singleLine = true,

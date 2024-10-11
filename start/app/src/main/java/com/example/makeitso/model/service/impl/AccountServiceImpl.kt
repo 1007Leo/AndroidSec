@@ -23,6 +23,7 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import com.example.makeitso.model.User
 import com.example.makeitso.model.service.AccountService
+import com.example.makeitso.model.service.impl.StorageServiceImpl.Companion.TASK_COLLECTION
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.AuthResult
@@ -38,7 +39,9 @@ import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
 
-class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, private val firestore: FirebaseFirestore
+class AccountServiceImpl @Inject constructor(
+  private val auth: FirebaseAuth,
+  private val firestore: FirebaseFirestore,
 ) : AccountService {
 
   override val currentUserId: String
@@ -133,9 +136,10 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
       else {
         MAIL_LOGIN_TYPE
       }
+
     val newUser = User(
       userId = currentUserId,
-      name = auth.currentUser?.displayName.toString(),
+      name = auth.currentUser?.displayName?: "",
       authMethod = loginMethod,
       login = auth.currentUser?.email.toString(),
       anonymous = false)
@@ -150,6 +154,7 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
   }
 
   override suspend fun deleteAccount() {
+    deleteCurrentUserTasks(currentUserId)
     deleteCurrentUserData(currentUserId)
     auth.currentUser!!.delete().await()
   }
@@ -185,10 +190,20 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
     firestore.collection(USER_COLLECTION).document(documentId).delete().await()
   }
 
+  override suspend fun deleteCurrentUserTasks(id: String) {
+    val tasksIds = firestore.collection(TASK_COLLECTION).whereEqualTo("userId", id).get().await().documents.map { it.id }
+    val batch = firestore.batch()
+    for (taskId in tasksIds) {
+      val taskRef = firestore.collection(TASK_COLLECTION).document(taskId)
+      batch.delete(taskRef)
+    }
+    batch.commit().await()
+  }
+
   companion object {
     private const val USER_COLLECTION = "users"
-    private const val LINK_ACCOUNT_TRACE = "linkAccount"
-    private const val SAVE_USER_DATA_TRACE = "saveUserData"
+//    private const val LINK_ACCOUNT_TRACE = "linkAccount"
+//    private const val SAVE_USER_DATA_TRACE = "saveUserData"
     const val MAIL_LOGIN_TYPE = "Logged in via Email"
     const val GOOGLE_LOGIN_TYPE = "Logged in via Gmail"
   }

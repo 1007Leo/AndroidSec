@@ -41,7 +41,6 @@ constructor(private val firestore: FirebaseFirestore, private val auth: AccountS
         firestore.collection(TASK_COLLECTION).whereEqualTo(USER_ID_FIELD, user.userId).dataObjects()
       }
 
-
   override suspend fun getTask(taskId: String): Task? =
     firestore.collection(TASK_COLLECTION).document(taskId).get().await().toObject()
 
@@ -62,7 +61,7 @@ constructor(private val firestore: FirebaseFirestore, private val auth: AccountS
 
   companion object {
     private const val USER_ID_FIELD = "userId"
-    private const val TASK_COLLECTION = "tasks"
+    const val TASK_COLLECTION = "tasks"
     private const val SAVE_TASK_TRACE = "saveTask"
     private const val UPDATE_TASK_TRACE = "updateTask"
   }

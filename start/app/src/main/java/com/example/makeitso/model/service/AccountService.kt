@@ -39,4 +39,5 @@ interface AccountService {
   suspend fun saveCurrentUserData(user: User)
   suspend fun updateCurrentUserData(user: User)
   suspend fun deleteCurrentUserData(id: String)
+  suspend fun deleteCurrentUserTasks(id: String)
 }

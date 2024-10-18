@@ -33,7 +33,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
@@ -133,22 +137,31 @@ fun ItemInputForm(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
+        var isNameValid by remember { mutableStateOf(true) }
         OutlinedTextField(
             value = itemDetails.name,
-            onValueChange = { onValueChange(itemDetails.copy(name = it)) },
+            onValueChange = {
+                onValueChange(itemDetails.copy(name = it))
+                isNameValid = ItemEntryViewModel.validateName(it)
+            },
             label = { Text(stringResource(R.string.item_name_req)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
+            isError = !isNameValid,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
         )
+        var isPriceValid by remember { mutableStateOf(true) }
         OutlinedTextField(
             value = itemDetails.price,
-            onValueChange = { onValueChange(itemDetails.copy(price = it)) },
+            onValueChange = {
+                onValueChange(itemDetails.copy(price = it))
+                isPriceValid = ItemEntryViewModel.validatePrice(it)
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             label = { Text(stringResource(R.string.item_price_req)) },
             colors = OutlinedTextFieldDefaults.colors(
@@ -156,14 +169,19 @@ fun ItemInputForm(
                 unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
+            isError = !isPriceValid,
             leadingIcon = { Text(Currency.getInstance(Locale.getDefault()).symbol) },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
         )
+        var isQuantityValid by remember { mutableStateOf(true) }
         OutlinedTextField(
             value = itemDetails.quantity,
-            onValueChange = { onValueChange(itemDetails.copy(quantity = it)) },
+            onValueChange = {
+                onValueChange(itemDetails.copy(quantity = it))
+                isQuantityValid = ItemEntryViewModel.validateQuantity(it)
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             label = { Text(stringResource(R.string.quantity_req)) },
             colors = OutlinedTextFieldDefaults.colors(
@@ -171,6 +189,59 @@ fun ItemInputForm(
                 unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
+            isError = !isQuantityValid,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = itemDetails.sourceName,
+            onValueChange = { onValueChange(itemDetails.copy(sourceName = it)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            label = { Text(stringResource(R.string.source_name)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            singleLine = true
+        )
+        var isEmailValid by remember { mutableStateOf(true) }
+        OutlinedTextField(
+            value = itemDetails.sourceEmail,
+            onValueChange = {
+                onValueChange(itemDetails.copy(sourceEmail = it))
+                isEmailValid = ItemEntryViewModel.validateEmail(it)
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            label = { Text(stringResource(R.string.source_email)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            isError = !isEmailValid,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            singleLine = true
+        )
+        var isPhoneValid by remember { mutableStateOf(true) }
+        OutlinedTextField(
+            value = itemDetails.sourcePhone,
+            onValueChange = {
+                onValueChange(itemDetails.copy(sourcePhone = it))
+                isPhoneValid = ItemEntryViewModel.validatePhone(it)
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            label = { Text(stringResource(R.string.source_phone)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            isError = !isPhoneValid,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
@@ -188,7 +259,8 @@ fun ItemInputForm(
 @Composable
 private fun ItemEntryScreenPreview() {
     InventoryTheme {
-        ItemEntryBody(itemUiState = ItemUiState(
+        ItemEntryBody(
+            itemUiState = ItemUiState(
             ItemDetails(
                 name = "Item name", price = "10.00", quantity = "5"
             )

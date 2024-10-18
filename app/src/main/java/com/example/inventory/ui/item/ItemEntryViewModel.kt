@@ -16,6 +16,7 @@
 
 package com.example.inventory.ui.item
 
+import android.provider.ContactsContract.CommonDataKinds.Phone
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -44,9 +45,30 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
             ItemUiState(itemDetails = itemDetails, isEntryValid = validateInput(itemDetails))
     }
 
+    companion object {
+        fun validateName(name: String): Boolean {
+            return name.isNotBlank()
+        }
+        fun validatePrice(price: String): Boolean {
+            val floatRegex = "^-?\\d+(\\.\\d+)?\$".toRegex()
+            return floatRegex.matches(price)
+        }
+        fun validateEmail(email: String): Boolean {
+            val emailRegex = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}".toRegex()
+            return if (email.isEmpty()) true else emailRegex.matches(email)
+        }
+        fun validateQuantity(quantity: String): Boolean {
+            return if (quantity.isEmpty()) false else quantity.all { it.isDigit() }
+        }
+        fun validatePhone(phone: String): Boolean {
+            return if (phone.isEmpty()) true else phone.all { it.isDigit() }
+        }
+    }
+
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
+            validateName(name) && validatePrice(price) && validateQuantity(quantity) &&
+                    validateEmail(sourceEmail) && validatePhone(sourcePhone)
         }
     }
 
@@ -71,6 +93,9 @@ data class ItemDetails(
     val name: String = "",
     val price: String = "",
     val quantity: String = "",
+    val sourceName: String = "",
+    val sourceEmail: String = "",
+    val sourcePhone: String = "",
 )
 
 /**
@@ -82,7 +107,10 @@ fun ItemDetails.toItem(): Item = Item(
     id = id,
     name = name,
     price = price.toDoubleOrNull() ?: 0.0,
-    quantity = quantity.toIntOrNull() ?: 0
+    quantity = quantity.toIntOrNull() ?: 0,
+    sourceName = sourceName,
+    sourceEmail = sourceEmail,
+    sourcePhone = sourcePhone,
 )
 
 fun Item.formatedPrice(): String {
@@ -104,5 +132,8 @@ fun Item.toItemDetails(): ItemDetails = ItemDetails(
     id = id,
     name = name,
     price = price.toString(),
-    quantity = quantity.toString()
+    quantity = quantity.toString(),
+    sourceName = sourceName,
+    sourceEmail = sourceEmail,
+    sourcePhone = sourcePhone,
 )

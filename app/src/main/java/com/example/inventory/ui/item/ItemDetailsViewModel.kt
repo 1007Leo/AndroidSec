@@ -16,9 +16,12 @@
 
 package com.example.inventory.ui.item
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.inventory.data.Item
 import com.example.inventory.data.ItemsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -55,6 +58,32 @@ class ItemDetailsViewModel(
                 itemsRepository.updateItem(currentItem.copy(quantity = currentItem.quantity - 1))
             }
         }
+    }
+
+    fun shareItem(item: Item, context: Context) {
+        val itemText = formatItemForSharing(item)
+
+        // Create an intent to share the item
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, itemText)
+            type = "text/plain"
+        }
+
+        // Start the Share Sheet
+        context.startActivity(Intent.createChooser(shareIntent, "Share Item"))
+    }
+
+
+    private fun formatItemForSharing(item: Item): String {
+        return """
+        Name: ${item.name}
+        Price: ${item.price}
+        Quantity: ${item.quantity}
+        Source Name: ${item.sourceName}
+        Source Email: ${item.sourceEmail}
+        Source Phone: ${item.sourcePhone}
+    """.trimIndent()
     }
 
     suspend fun deleteItem() {

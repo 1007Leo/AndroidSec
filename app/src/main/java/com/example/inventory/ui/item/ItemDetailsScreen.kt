@@ -49,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -61,6 +62,7 @@ import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 object ItemDetailsDestination : NavigationDestination {
@@ -80,6 +82,7 @@ fun ItemDetailsScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -111,6 +114,7 @@ fun ItemDetailsScreen(
                     navigateBack()
                 }
             },
+            onShare = { viewModel.shareItem(uiState.value.itemDetails.toItem(), context)},
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -127,6 +131,7 @@ private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
     onSellItem: () -> Unit,
     onDelete: () -> Unit,
+    onShare: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -153,6 +158,13 @@ private fun ItemDetailsBody(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.delete))
+        }
+        OutlinedButton(
+            onClick = onShare,
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.share))
         }
         if (deleteConfirmationRequired) {
             DeleteConfirmationDialog(
@@ -275,7 +287,8 @@ fun ItemDetailsScreenPreview() {
                 itemDetails = ItemDetails(1, "Pen", "$100", "10", "ErichKrause", "ek@gmail.com", "89999999991")
             ),
             onSellItem = {},
-            onDelete = {}
+            onDelete = {},
+            onShare = {},
         )
     }
 }

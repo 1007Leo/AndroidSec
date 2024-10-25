@@ -16,7 +16,6 @@
 
 package com.example.inventory.ui.item
 
-import android.provider.ContactsContract.CommonDataKinds.Phone
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

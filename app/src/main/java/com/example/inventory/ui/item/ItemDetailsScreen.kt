@@ -16,6 +16,7 @@
 
 package com.example.inventory.ui.item
 
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,8 +62,8 @@ import com.example.inventory.R
 import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
+import com.example.inventory.ui.settings.SettingsViewModel
 import com.example.inventory.ui.theme.InventoryTheme
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 object ItemDetailsDestination : NavigationDestination {
@@ -78,7 +79,8 @@ fun ItemDetailsScreen(
     navigateToEditItem: (Int) -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    settingsViewModel: SettingsViewModel,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -89,6 +91,7 @@ fun ItemDetailsScreen(
             InventoryTopAppBar(
                 title = stringResource(ItemDetailsDestination.titleRes),
                 canNavigateBack = true,
+                canNavigateSettings = false,
                 navigateUp = navigateBack
             )
         }, floatingActionButton = {
@@ -107,6 +110,7 @@ fun ItemDetailsScreen(
     ) { innerPadding ->
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
+            settingsViewModel = settingsViewModel,
             onSellItem = { viewModel.reduceQuantityByOne() },
             onDelete = {
                 coroutineScope.launch {
@@ -114,7 +118,15 @@ fun ItemDetailsScreen(
                     navigateBack()
                 }
             },
-            onShare = { viewModel.shareItem(uiState.value.itemDetails.toItem(), context)},
+            onShare = {
+                if (settingsViewModel.shareOption) {
+                    val toast = Toast.makeText(context, "Sharing is forbidden by privacy settings", Toast.LENGTH_SHORT)
+                    toast.show()
+                }
+                else {
+                    viewModel.shareItem(uiState.value.itemDetails.toItem(), context)
+                }
+            },
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -132,7 +144,8 @@ private fun ItemDetailsBody(
     onSellItem: () -> Unit,
     onDelete: () -> Unit,
     onShare: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    settingsViewModel: SettingsViewModel
 ) {
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
@@ -142,7 +155,8 @@ private fun ItemDetailsBody(
 
         ItemDetails(
             item = itemDetailsUiState.itemDetails.toItem(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            showSourceData = !settingsViewModel.privateDataOption
         )
         Button(
             onClick = onSellItem,
@@ -181,7 +195,9 @@ private fun ItemDetailsBody(
 
 @Composable
 fun ItemDetails(
-    item: Item, modifier: Modifier = Modifier
+    item: Item,
+    modifier: Modifier = Modifier,
+    showSourceData: Boolean = true
 ) {
     Card(
         modifier = modifier,
@@ -224,21 +240,25 @@ fun ItemDetails(
                 itemDetail = item.sourceName,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+                isVisible = showSourceData
+
             )
             ItemDetailsRow(
                 labelResID = R.string.source_email,
                 itemDetail = item.sourceEmail,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+                isVisible = showSourceData
             )
             ItemDetailsRow(
                 labelResID = R.string.source_phone,
                 itemDetail = item.sourcePhone,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+                isVisible = showSourceData
             )
         }
     }
@@ -246,12 +266,21 @@ fun ItemDetails(
 
 @Composable
 private fun ItemDetailsRow(
-    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier
+    @StringRes labelResID: Int,
+    itemDetail: String,
+    modifier: Modifier = Modifier,
+    isVisible: Boolean = true
 ) {
     Row(modifier = modifier) {
         Text(stringResource(labelResID))
         Spacer(modifier = Modifier.weight(1f))
-        Text(text = itemDetail, fontWeight = FontWeight.Bold)
+        if (isVisible) {
+            Text(text = itemDetail, fontWeight = FontWeight.Bold)
+        }
+        else {
+            val obscuredItemDetail = "*".repeat(itemDetail.length)
+            Text(text = obscuredItemDetail, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
@@ -289,6 +318,7 @@ fun ItemDetailsScreenPreview() {
             onSellItem = {},
             onDelete = {},
             onShare = {},
+            settingsViewModel = viewModel()
         )
     }
 }

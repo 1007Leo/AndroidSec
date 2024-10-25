@@ -18,8 +18,10 @@
 
 package com.example.inventory
 
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.Icons.Filled
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,9 +51,11 @@ fun InventoryApp(navController: NavHostController = rememberNavController()) {
 fun InventoryTopAppBar(
     title: String,
     canNavigateBack: Boolean,
+    canNavigateSettings: Boolean,
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    navigateUp: () -> Unit = {}
+    navigateUp: () -> Unit = {},
+    onSettingsClick: () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
         title = { Text(title) },
@@ -63,6 +67,16 @@ fun InventoryTopAppBar(
                     Icon(
                         imageVector = Filled.ArrowBack,
                         contentDescription = stringResource(string.back_button)
+                    )
+                }
+            }
+        },
+        actions = {
+            if (canNavigateSettings) {
+                IconButton(onClick = onSettingsClick) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(string.settings)
                     )
                 }
             }

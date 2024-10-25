@@ -49,6 +49,7 @@ import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
+import com.example.inventory.ui.settings.SettingsViewModel
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
 import java.util.Currency
@@ -65,7 +66,8 @@ fun ItemEntryScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     canNavigateBack: Boolean = true,
-    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    settingsViewModel: SettingsViewModel,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -74,6 +76,7 @@ fun ItemEntryScreen(
             InventoryTopAppBar(
                 title = stringResource(ItemEntryDestination.titleRes),
                 canNavigateBack = canNavigateBack,
+                canNavigateSettings = false,
                 navigateUp = onNavigateUp
             )
         }
@@ -94,7 +97,8 @@ fun ItemEntryScreen(
                     top = innerPadding.calculateTopPadding()
                 )
                 .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            defaultQuantity = if (settingsViewModel.defaultCountOption) settingsViewModel.defaultCountValue else ""
         )
     }
 }
@@ -104,7 +108,8 @@ fun ItemEntryBody(
     itemUiState: ItemUiState,
     onItemValueChange: (ItemDetails) -> Unit,
     onSaveClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    defaultQuantity: String = "",
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large)),
@@ -113,7 +118,8 @@ fun ItemEntryBody(
         ItemInputForm(
             itemDetails = itemUiState.itemDetails,
             onValueChange = onItemValueChange,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            defaultQuantity = defaultQuantity
         )
         Button(
             onClick = onSaveClick,
@@ -131,7 +137,8 @@ fun ItemInputForm(
     itemDetails: ItemDetails,
     modifier: Modifier = Modifier,
     onValueChange: (ItemDetails) -> Unit = {},
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    defaultQuantity: String = "",
 ) {
     Column(
         modifier = modifier,
@@ -176,6 +183,11 @@ fun ItemInputForm(
             singleLine = true
         )
         var isQuantityValid by remember { mutableStateOf(true) }
+        var defaultQuantitySet by remember { mutableStateOf(false) }
+        if (defaultQuantity != "" && !defaultQuantitySet) {
+            defaultQuantitySet = true
+            onValueChange(itemDetails.copy(quantity = defaultQuantity))
+        }
         OutlinedTextField(
             value = itemDetails.quantity,
             onValueChange = {

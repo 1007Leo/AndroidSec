@@ -18,6 +18,8 @@ package com.example.inventory.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,6 +33,10 @@ import com.example.inventory.ui.item.ItemEditDestination
 import com.example.inventory.ui.item.ItemEditScreen
 import com.example.inventory.ui.item.ItemEntryDestination
 import com.example.inventory.ui.item.ItemEntryScreen
+import com.example.inventory.ui.settings.SettingsDestination
+import com.example.inventory.ui.settings.SettingsScreen
+import com.example.inventory.ui.settings.SettingsViewModel
+import com.example.inventory.ui.settings.SettingsViewModelFactory
 
 /**
  * Provides Navigation graph for the application.
@@ -40,6 +46,7 @@ fun InventoryNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(LocalContext.current))
     NavHost(
         navController = navController,
         startDestination = HomeDestination.route,
@@ -50,13 +57,22 @@ fun InventoryNavHost(
                 navigateToItemEntry = { navController.navigate(ItemEntryDestination.route) },
                 navigateToItemUpdate = {
                     navController.navigate("${ItemDetailsDestination.route}/${it}")
-                }
+                },
+                navigateToSettings = { navController.navigate(SettingsDestination.route) }
             )
         }
         composable(route = ItemEntryDestination.route) {
             ItemEntryScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
+                onNavigateUp = { navController.navigateUp() },
+                settingsViewModel = settingsViewModel,
+            )
+        }
+        composable(route = SettingsDestination.route) {
+            SettingsScreen(
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() },
+                viewModel = settingsViewModel
             )
         }
         composable(
@@ -67,7 +83,8 @@ fun InventoryNavHost(
         ) {
             ItemDetailsScreen(
                 navigateToEditItem = { navController.navigate("${ItemEditDestination.route}/$it") },
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
+                settingsViewModel = settingsViewModel
             )
         }
         composable(

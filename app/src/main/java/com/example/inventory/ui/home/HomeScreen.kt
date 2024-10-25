@@ -71,6 +71,7 @@ object HomeDestination : NavigationDestination {
 fun HomeScreen(
     navigateToItemEntry: () -> Unit,
     navigateToItemUpdate: (Int) -> Unit,
+    navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -83,7 +84,9 @@ fun HomeScreen(
             InventoryTopAppBar(
                 title = stringResource(HomeDestination.titleRes),
                 canNavigateBack = false,
-                scrollBehavior = scrollBehavior
+                canNavigateSettings = true,
+                scrollBehavior = scrollBehavior,
+                onSettingsClick = navigateToSettings
             )
         },
         floatingActionButton = {

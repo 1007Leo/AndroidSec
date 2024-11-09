@@ -16,7 +16,12 @@
 
 package com.example.inventory.ui.item
 
+import android.app.Activity
+import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -59,7 +64,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
+import com.example.inventory.data.CreationType
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemFileOperator
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.settings.SettingsViewModel
@@ -81,6 +88,7 @@ fun ItemDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     settingsViewModel: SettingsViewModel,
+    itemFileOperator: ItemFileOperator,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -108,6 +116,19 @@ fun ItemDetailsScreen(
             }
         }, modifier = modifier
     ) { innerPadding ->
+
+        val saveLauncher: ActivityResultLauncher<Intent> =
+            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let { uri ->
+                    itemFileOperator.saveItemToFile(
+                        uiState.value.itemDetails.toItem().copy(creationType = CreationType.File),
+                        uri
+                    )
+                }
+            }
+        }
+
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
             settingsViewModel = settingsViewModel,
@@ -127,6 +148,14 @@ fun ItemDetailsScreen(
                     viewModel.shareItem(uiState.value.itemDetails.toItem(), context)
                 }
             },
+            onSaveToFile = {
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "application/json"
+                    putExtra(Intent.EXTRA_TITLE, "${uiState.value.itemDetails.name}.json")
+                }
+                saveLauncher.launch(intent)
+            },
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -144,6 +173,7 @@ private fun ItemDetailsBody(
     onSellItem: () -> Unit,
     onDelete: () -> Unit,
     onShare: () -> Unit,
+    onSaveToFile: () -> Unit,
     modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel
 ) {
@@ -179,6 +209,13 @@ private fun ItemDetailsBody(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.share))
+        }
+        OutlinedButton(
+            onClick = onSaveToFile,
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.save_to_file))
         }
         if (deleteConfirmationRequired) {
             DeleteConfirmationDialog(
@@ -260,6 +297,13 @@ fun ItemDetails(
                 ),
                 isVisible = showSourceData
             )
+            ItemDetailsRow(
+                labelResID = R.string.creation_method,
+                itemDetail = item.creationType.toString(),
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
         }
     }
 }
@@ -318,6 +362,7 @@ fun ItemDetailsScreenPreview() {
             onSellItem = {},
             onDelete = {},
             onShare = {},
+            onSaveToFile = {},
             settingsViewModel = viewModel()
         )
     }

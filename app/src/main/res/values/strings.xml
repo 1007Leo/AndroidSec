@@ -44,4 +44,7 @@
     <string name="hide_private_data">Hide private data</string>
     <string name="forbid_share">Forbid item sharing</string>
     <string name="default_item_count">Default item count</string>
+    <string name="creation_method">Creation method</string>
+    <string name="save_to_file">Save to file</string>
+    <string name="load_encrypted_file">Load from encrypted file</string>
 </resources>

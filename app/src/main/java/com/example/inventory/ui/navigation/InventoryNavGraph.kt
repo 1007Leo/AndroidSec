@@ -25,6 +25,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.inventory.data.ItemFileOperator
 import com.example.inventory.ui.home.HomeDestination
 import com.example.inventory.ui.home.HomeScreen
 import com.example.inventory.ui.item.ItemDetailsDestination
@@ -47,6 +48,8 @@ fun InventoryNavHost(
     modifier: Modifier = Modifier,
 ) {
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(LocalContext.current))
+    val itemFileOperator = ItemFileOperator(LocalContext.current)
+
     NavHost(
         navController = navController,
         startDestination = HomeDestination.route,
@@ -66,6 +69,7 @@ fun InventoryNavHost(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() },
                 settingsViewModel = settingsViewModel,
+                itemFileOperator = itemFileOperator
             )
         }
         composable(route = SettingsDestination.route) {
@@ -84,7 +88,8 @@ fun InventoryNavHost(
             ItemDetailsScreen(
                 navigateToEditItem = { navController.navigate("${ItemEditDestination.route}/$it") },
                 navigateBack = { navController.navigateUp() },
-                settingsViewModel = settingsViewModel
+                settingsViewModel = settingsViewModel,
+                itemFileOperator = itemFileOperator
             )
         }
         composable(

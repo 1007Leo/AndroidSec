@@ -19,6 +19,7 @@ package com.example.inventory.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+enum class CreationType {Manual, File}
 
 /**
  * Entity data class represents a single row in the database.
@@ -33,4 +34,5 @@ data class Item(
     val sourceName: String,
     val sourceEmail: String,
     val sourcePhone: String,
+    val creationType: CreationType,
 )

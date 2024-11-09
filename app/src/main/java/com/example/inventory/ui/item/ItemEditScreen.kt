@@ -89,6 +89,8 @@ fun ItemEditScreen(
 @Composable
 fun ItemEditScreenPreview() {
     InventoryTheme {
-        ItemEditScreen(navigateBack = { /*Do nothing*/ }, onNavigateUp = { /*Do nothing*/ })
+        ItemEditScreen(
+            navigateBack = { /*Do nothing*/ },
+            onNavigateUp = { /*Do nothing*/ },)
     }
 }

@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
+import com.example.inventory.data.CreationType
 import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.item.formatedPrice
@@ -198,9 +199,9 @@ private fun InventoryItem(
 fun HomeBodyPreview() {
     InventoryTheme {
         HomeBody(listOf(
-            Item(1, "Game", 100.0, 20, "Source name 1", "source1@mail.ru", "89999999991"),
-            Item(2, "Pen", 200.0, 30, "Source name 2", "source2@mail.ru", "89999999992"),
-            Item(3, "TV", 300.0, 50, "Source name 3", "source3@mail.ru", "89999999993")
+            Item(1, "Game", 100.0, 20, "Source name 1", "source1@mail.ru", "89999999991", CreationType.Manual),
+            Item(2, "Pen", 200.0, 30, "Source name 2", "source2@mail.ru", "89999999992", CreationType.Manual),
+            Item(3, "TV", 300.0, 50, "Source name 3", "source3@mail.ru", "89999999993", CreationType.Manual)
         ), onItemClick = {})
     }
 }
@@ -218,7 +219,7 @@ fun HomeBodyEmptyListPreview() {
 fun InventoryItemPreview() {
     InventoryTheme {
         InventoryItem(
-            Item(1, "Game", 100.0, 20, "Source name 1", "source1@mail.ru", "89999999991"),
+            Item(1, "Game", 100.0, 20, "Source name 1", "source1@mail.ru", "89999999991", CreationType.Manual),
         )
     }
 }

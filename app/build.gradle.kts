@@ -90,4 +90,5 @@ dependencies {
     // Shared Preferences
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
 
+    implementation("com.google.code.gson:gson:2.8.8")
 }

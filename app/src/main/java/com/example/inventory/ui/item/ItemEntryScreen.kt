@@ -16,6 +16,11 @@
 
 package com.example.inventory.ui.item
 
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -47,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
+import com.example.inventory.data.ItemFileOperator
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.settings.SettingsViewModel
@@ -68,8 +74,21 @@ fun ItemEntryScreen(
     canNavigateBack: Boolean = true,
     viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory),
     settingsViewModel: SettingsViewModel,
+    itemFileOperator: ItemFileOperator,
 ) {
     val coroutineScope = rememberCoroutineScope()
+
+    val loadLauncher: ActivityResultLauncher<Intent> =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                val loadedItem = itemFileOperator.loadItemFromFile(uri)
+                loadedItem?.let {
+                    viewModel.updateUiState(loadedItem.toItemDetails())
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -81,25 +100,45 @@ fun ItemEntryScreen(
             )
         }
     ) { innerPadding ->
-        ItemEntryBody(
-            itemUiState = viewModel.itemUiState,
-            onItemValueChange = viewModel::updateUiState,
-            onSaveClick = {
-                coroutineScope.launch {
-                    viewModel.saveItem()
-                    navigateBack()
+        Column {
+            ItemEntryBody(
+                itemUiState = viewModel.itemUiState,
+                onItemValueChange = viewModel::updateUiState,
+                onSaveClick = {
+                    coroutineScope.launch {
+                        viewModel.saveItem()
+                        navigateBack()
+                    }
+                },
+                modifier = Modifier
+                    .padding(
+                        start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
+                        end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
+                        top = innerPadding.calculateTopPadding()
+                    )
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth(),
+                defaultQuantity = if (settingsViewModel.defaultCountOption) settingsViewModel.defaultCountValue else ""
+            )
+            Column (
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "application/json"
+                        }
+                        loadLauncher.launch(intent)
+                    },
+                    enabled = true,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = stringResource(R.string.load_encrypted_file))
                 }
-            },
-            modifier = Modifier
-                .padding(
-                    start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
-                    end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
-                    top = innerPadding.calculateTopPadding()
-                )
-                .verticalScroll(rememberScrollState())
-                .fillMaxWidth(),
-            defaultQuantity = if (settingsViewModel.defaultCountOption) settingsViewModel.defaultCountValue else ""
-        )
+            }
+        }
     }
 }
 
@@ -258,6 +297,19 @@ fun ItemInputForm(
             enabled = enabled,
             singleLine = true
         )
+        OutlinedTextField(
+            value = itemDetails.creationType.toString(),
+            onValueChange = {},
+            label = { Text(stringResource(R.string.creation_method)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            enabled = false,
+            singleLine = true
+        )
         if (enabled) {
             Text(
                 text = stringResource(R.string.required_fields),
@@ -271,11 +323,25 @@ fun ItemInputForm(
 @Composable
 private fun ItemEntryScreenPreview() {
     InventoryTheme {
-        ItemEntryBody(
-            itemUiState = ItemUiState(
-            ItemDetails(
-                name = "Item name", price = "10.00", quantity = "5"
-            )
-        ), onItemValueChange = {}, onSaveClick = {})
+        Column {
+            ItemEntryBody(
+                itemUiState = ItemUiState(
+                    ItemDetails(
+                        name = "Item name", price = "10.00", quantity = "5"
+                    )
+                ), onItemValueChange = {}, onSaveClick = {})
+            Column (
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                Button(
+                    onClick = {},
+                    enabled = true,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = stringResource(R.string.load_encrypted_file))
+                }
+            }
+        }
     }
 }

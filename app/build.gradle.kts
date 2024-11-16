@@ -91,4 +91,9 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
 
     implementation("com.google.code.gson:gson:2.8.8")
+
+    implementation("net.zetetic:android-database-sqlcipher:4.5.3")
+    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+
+    implementation("com.commonsware.cwac:saferoom:1.2.1")
 }

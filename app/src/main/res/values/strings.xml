@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Health Connect</string>
+    <string name="back_button">Back</string>
+    <string name="new_button">New</string>
+    <string name="edit_screen_name">Edit</string>
+    <string name="create_screen_name">Create</string>
+</resources>

@@ -1,4 +1,4 @@
-package com.example.healthconnect.HealthConnect
+package com.example.healthconnect.data
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
@@ -10,6 +10,9 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.health.connect.client.units.Length
+import androidx.health.connect.client.units.Mass
+import com.example.healthconnect.ui.create.ItemUiState
 import java.time.Instant
 
 class HealthConnectProvider {
@@ -43,11 +46,51 @@ class HealthConnectProvider {
         _client = HealthConnectClient.getOrCreate(context)
     }
 
-    suspend fun insertSteps() {
+    suspend fun insertItem(item: ItemUiState) {
+        try {
+            val records = listOf(
+                getStepsRecord(item.steps.toLong()),
+                getDistanceRecord(item.distance.toDouble()),
+                getWeightRecord(item.weight.toDouble()))
+            _client?.insertRecords(records)
+        } catch (e: Exception) {
+
+        }
+    }
+
+    private fun getStepsRecord(steps: Long): StepsRecord {
+        return StepsRecord(
+            count = steps,
+            startTime = Instant.now(),
+            endTime = Instant.ofEpochSecond(Instant.now().epochSecond + 1),
+            startZoneOffset = null,
+            endZoneOffset = null,
+        )
+    }
+
+    private fun getDistanceRecord(distanceKilometers: Double): DistanceRecord {
+        return DistanceRecord(
+            distance = Length.kilometers(distanceKilometers),
+            startTime = Instant.now(),
+            endTime = Instant.ofEpochSecond(Instant.now().epochSecond + 1),
+            startZoneOffset = null,
+            endZoneOffset = null,
+        )
+    }
+
+    private fun getWeightRecord(weightKilograms: Double): WeightRecord {
+        return WeightRecord(
+            weight = Mass.kilograms(weightKilograms),
+            time = Instant.now(),
+            zoneOffset = null,
+        )
+    }
+
+    suspend fun insertSteps(steps: Long) {
         try {
             val stepsRecord = StepsRecord(
-                count = 120,
-                startTime = Instant.EPOCH,
+                count = steps,
+                startTime = Instant.now(),
                 endTime = Instant.ofEpochSecond(10000),
                 startZoneOffset = null,
                 endZoneOffset = null,
@@ -55,8 +98,6 @@ class HealthConnectProvider {
             _client?.insertRecords(listOf(stepsRecord))
         } catch (e: Exception) {
             // Run error handling here
-            print(e.message)
-
         }
     }
 

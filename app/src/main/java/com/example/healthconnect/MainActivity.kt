@@ -4,16 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.platform.LocalContext
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.BloodPressureRecord
-import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.WeightRecord
-import com.example.healthconnect.HealthConnect.HealthConnectProvider
+import com.example.healthconnect.data.HealthConnectProvider
 import com.example.healthconnect.ui.theme.HealthConnectTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

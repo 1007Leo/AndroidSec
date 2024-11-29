@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.healthconnect.HealthConnect.HealthConnectProvider
+import com.example.healthconnect.data.HealthConnectProvider
 import com.example.healthconnect.ui.navigation.AppNavHost
 
 @Composable

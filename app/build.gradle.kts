@@ -59,10 +59,13 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material")
 
     implementation(libs.androidx.connect.client)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

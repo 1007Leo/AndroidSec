@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import com.example.healthconnect.HealthConnect.HealthConnectProvider
+import com.example.healthconnect.data.HealthConnectProvider
 import com.example.healthconnect.ui.create.CreateDestination
 import com.example.healthconnect.ui.create.CreateScreen
 import com.example.healthconnect.ui.create.CreateViewModel
@@ -47,6 +47,7 @@ fun AppNavHost(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() },
                 createViewModel = CreateViewModel(),
+                healthConnectProvider = healthConnectProvider,
             )
         }
     }

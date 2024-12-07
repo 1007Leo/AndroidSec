@@ -4,17 +4,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.healthconnect.data.HealthConnectProvider
 import com.example.healthconnect.ui.create.CreateDestination
 import com.example.healthconnect.ui.create.CreateScreen
 import com.example.healthconnect.ui.create.CreateViewModel
 import com.example.healthconnect.ui.edit.EditDestination
 import com.example.healthconnect.ui.edit.EditScreen
-import com.example.healthconnect.ui.edit.EditViewModel
 import com.example.healthconnect.ui.home.HomeDestination
 import com.example.healthconnect.ui.home.HomeScreen
-import com.example.healthconnect.ui.home.HomeViewModel
 
 @Composable
 fun AppNavHost(
@@ -29,17 +29,21 @@ fun AppNavHost(
     ) {
         composable(route = HomeDestination.route) {
             HomeScreen(
-                navigateToEdit = { navController.navigate(EditDestination.route) },
+                navigateToEdit = { navController.navigate("${EditDestination.route}/${it}") },
                 navigateToCreate = { navController.navigate(CreateDestination.route) },
-                viewModel = HomeViewModel(),
                 healthConnectProvider = healthConnectProvider,
             )
         }
-        composable(route = EditDestination.route) {
+        composable(
+            route = EditDestination.routeWithArgs,
+            arguments = listOf(navArgument(EditDestination.itemIdArg) {
+                type = NavType.StringType
+            })
+        ) {
             EditScreen(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() },
-                editViewModel = EditViewModel(),
+                healthConnectProvider = healthConnectProvider,
             )
         }
         composable(route = CreateDestination.route) {

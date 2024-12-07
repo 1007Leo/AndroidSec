@@ -2,27 +2,22 @@ package com.example.healthconnect.data
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.deleteRecords
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Length
 import androidx.health.connect.client.units.Mass
-import com.example.healthconnect.ui.create.ItemUiState
 import java.time.Instant
 
 class HealthConnectProvider {
     var permissionsGranted = false
     val PERMISSIONS =
         setOf(
-            HealthPermission.getReadPermission(HeartRateRecord::class),
-            HealthPermission.getWritePermission(HeartRateRecord::class),
-            HealthPermission.getReadPermission(BloodPressureRecord::class),
-            HealthPermission.getWritePermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(StepsRecord::class),
             HealthPermission.getWritePermission(StepsRecord::class),
             HealthPermission.getReadPermission(WeightRecord::class),
@@ -36,8 +31,6 @@ class HealthConnectProvider {
     val client: HealthConnectClient?
         get() = _client
 
-    var items = mutableListOf<HealthItem>()
-
     fun createClient(context: Context) {
         val availabilityStatus = HealthConnectClient.getSdkStatus(context, "com.google.android.apps.healthdata")
         if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
@@ -46,77 +39,137 @@ class HealthConnectProvider {
         _client = HealthConnectClient.getOrCreate(context)
     }
 
-    suspend fun insertItem(item: ItemUiState) {
-        try {
-            val records = listOf(
-                getStepsRecord(item.steps.toLong()),
-                getDistanceRecord(item.distance.toDouble()),
-                getWeightRecord(item.weight.toDouble()))
-            _client?.insertRecords(records)
-        } catch (e: Exception) {
-
-        }
-    }
-
-    private fun getStepsRecord(steps: Long): StepsRecord {
-        return StepsRecord(
-            count = steps,
-            startTime = Instant.now(),
-            endTime = Instant.ofEpochSecond(Instant.now().epochSecond + 1),
-            startZoneOffset = null,
-            endZoneOffset = null,
-        )
-    }
-
-    private fun getDistanceRecord(distanceKilometers: Double): DistanceRecord {
-        return DistanceRecord(
-            distance = Length.kilometers(distanceKilometers),
-            startTime = Instant.now(),
-            endTime = Instant.ofEpochSecond(Instant.now().epochSecond + 1),
-            startZoneOffset = null,
-            endZoneOffset = null,
-        )
-    }
-
-    private fun getWeightRecord(weightKilograms: Double): WeightRecord {
-        return WeightRecord(
-            weight = Mass.kilograms(weightKilograms),
-            time = Instant.now(),
-            zoneOffset = null,
-        )
-    }
-
     suspend fun insertSteps(steps: Long) {
         try {
-            val stepsRecord = StepsRecord(
+            val sr = StepsRecord(
                 count = steps,
                 startTime = Instant.now(),
-                endTime = Instant.ofEpochSecond(10000),
+                endTime = Instant.ofEpochSecond(Instant.now().epochSecond + 1),
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
-            _client?.insertRecords(listOf(stepsRecord))
+            _client?.insertRecords(listOf(sr))
         } catch (e: Exception) {
-            // Run error handling here
+
+        }
+    }
+    suspend fun insertDistance(distanceKilometers: Double) {
+        try {
+            val dr = DistanceRecord(
+                distance = Length.kilometers(distanceKilometers),
+                startTime = Instant.now(),
+                endTime = Instant.ofEpochSecond(Instant.now().epochSecond + 1),
+                startZoneOffset = null,
+                endZoneOffset = null,
+            )
+            _client?.insertRecords(listOf(dr))
+        } catch (e: Exception) {
+
+        }
+    }
+    suspend fun insertWeight(weightKilograms: Double) {
+        try {
+            val wr = WeightRecord(
+                weight = Mass.kilograms(weightKilograms),
+                time = Instant.now(),
+                zoneOffset = null,
+            )
+            _client?.insertRecords(listOf(wr))
+        } catch (e: Exception) {
+
         }
     }
 
-    suspend fun readStepsByTimeRange(): Long {
+    suspend fun readRecordsByTimeRange(start: Instant, end: Instant): List<Record> {
+        val res = mutableListOf<Record>()
+        try {
+            res.addAll(readStepsByTimeRange(start, end))
+            res.addAll(readDistanceByTimeRange(start, end))
+            res.addAll(readWeightByTimeRange(start, end))
+        } catch (e: Exception) {
+            // Run error handling here.
+        }
+        return res
+    }
+
+    private suspend fun readStepsByTimeRange(start: Instant, end: Instant): List<StepsRecord> {
+        val res = mutableListOf<StepsRecord>()
         try {
             val response =
                 _client!!.readRecords(
                     ReadRecordsRequest(
                         StepsRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(Instant.EPOCH, Instant.ofEpochSecond(10000))
+                        timeRangeFilter = TimeRangeFilter.between(start, end)
                     )
                 )
             for (stepRecord in response.records) {
-                // Process each step record
-                return stepRecord.count
+                res.add(stepRecord)
             }
         } catch (e: Exception) {
             // Run error handling here.
         }
-        return 0
+        return res
+    }
+    private suspend fun readDistanceByTimeRange(start: Instant, end: Instant): List<DistanceRecord> {
+        val res = mutableListOf<DistanceRecord>()
+        try {
+            val response =
+                _client!!.readRecords(
+                    ReadRecordsRequest(
+                        DistanceRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(start, end)
+                    )
+                )
+            for (distanceRecord in response.records) {
+                res.add(distanceRecord)
+            }
+        } catch (e: Exception) {
+            // Run error handling here.
+        }
+        return res
+    }
+    private suspend fun readWeightByTimeRange(start: Instant, end: Instant): List<WeightRecord> {
+        val res = mutableListOf<WeightRecord>()
+        try {
+            val response =
+                _client!!.readRecords(
+                    ReadRecordsRequest(
+                        WeightRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(start, end)
+                    )
+                )
+            for (weightRecord in response.records) {
+                res.add(weightRecord)
+            }
+        } catch (e: Exception) {
+            // Run error handling here.
+        }
+        return res
+    }
+
+    suspend fun updateRecord(newRecord: Record) {
+        try {
+            _client!!.updateRecords(listOf(newRecord))
+        } catch (e: Exception) {
+
+        }
+    }
+
+    suspend fun deleteRecord(record: Record) {
+        try {
+            when (record::class) {
+                StepsRecord::class -> {
+                    _client!!.deleteRecords<StepsRecord>(listOf(record.metadata.id), emptyList())
+                }
+                WeightRecord::class -> {
+                    _client!!.deleteRecords<WeightRecord>(listOf(record.metadata.id), emptyList())
+                }
+                DistanceRecord::class -> {
+                    _client!!.deleteRecords<DistanceRecord>(listOf(record.metadata.id), emptyList())
+                }
+            }
+        } catch (e: Exception) {
+
+        }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.healthconnect.ui.create
 
-import android.content.ClipData.Item
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,7 +14,14 @@ class CreateViewModel: ViewModel() {
     }
 }
 
+enum class DataTypes(val displayName: String) {
+    STEPS("Steps"),
+    DISTANCE("Distance"),
+    WEIGHT("Weight")
+}
+
 data class ItemUiState(
+    val type: DataTypes = DataTypes.STEPS,
     val steps: String = "",
     val distance: String = "",
     val weight: String = "",

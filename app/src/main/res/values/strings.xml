@@ -5,4 +5,5 @@
     <string name="edit_screen_name">Edit</string>
     <string name="create_screen_name">Create</string>
     <string name="save_item_button">Save</string>
+    <string name="delete_item_button">Delete</string>
 </resources>
